@@ -1,0 +1,28 @@
+var express = require('express');
+const sql = require('mssql');
+var router = express.Router();
+
+const sqlConfig = {
+    user: 'root',
+    password: 'test',
+    server: '127.0.0.1:3306',
+    database: 'cash'
+}
+
+/* GET home page. */
+router.get('/', function (req, res, next) {
+
+    const connection = sql.connect(sqlConfig, (err) => {
+        if (err) {
+            console.log('error');
+            res.send('error');
+        } else {
+            res.send('DB connected');
+        }
+    });
+
+    //res.render('index', { title: 'Express' });
+
+});
+
+module.exports = router;
