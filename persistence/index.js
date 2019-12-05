@@ -47,4 +47,10 @@ Object.keys(db).forEach(modelName => {
     }
 });
 
+db.sequelize.sync({
+    force: true
+}).catch(function (err) {
+    console.error(err.stack);
+});
+
 module.exports = db;

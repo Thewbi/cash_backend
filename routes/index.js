@@ -12,16 +12,6 @@ const sqlConfig = {
 /* GET home page. */
 router.get('/', function (req, res, next) {
 
-    const connection = sql.connect(sqlConfig, (err) => {
-        if (err) {
-            console.log('error');
-            res.send('error');
-        } else {
-            res.send('DB connected');
-        }
-    });
-
-    //res.render('index', { title: 'Express' });
 
 });
 

@@ -3,23 +3,6 @@ var router = express.Router();
 
 var db = require('../persistence/index.js');
 
-// router.get('/', function (req, res, next) {
-
-//     db.sequelize.sync().then(function () {
-//         return db.Account.create({
-//             amount: 123
-//         });
-//     }).then(function (new_account) {
-
-//         const msg = new_account.get({
-//             plain: true
-//         });
-//         console.log(msg);
-//         res.send(msg);
-//     });
-
-// });
-
 router.post('/create/real', function (req, res, next) {
 
     console.log('/create/real');
