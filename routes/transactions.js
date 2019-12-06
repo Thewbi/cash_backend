@@ -68,6 +68,7 @@ router.post('/create', function (req, res, next) {
         // the virtual account is associated to the real account
 
         /*
+        // Income (no source)
         {
             "name": "transaction-1",
             "amount": 100,
@@ -91,6 +92,7 @@ router.post('/create', function (req, res, next) {
     else if (typeof transactionDescriptor.TargetId === "undefined") {
 
         /*
+        // Expense (no target)
         {
             "name": "transaction-2",
             "amount": -50,
@@ -114,51 +116,173 @@ router.post('/create', function (req, res, next) {
     }
     else {
 
-        var sourceAccount = null;
-        var targetAccount = null;
+        // TODO: case where money is flowing into a target real account!
 
-        db.Account.findByPk(transactionDescriptor.SourceId)
-            .then(account => {
-                sourceAccount = account;
+        /*
+        // move cash into virtual account without altering real account
+        {
+            "name": "transaction-1",
+            "amount": 50,
+            "SourceId": 1,
+            "TargetId": 4
+        }
+        */
 
-                const result = sourceAccount.get({
-                    plain: true
-                });
-                console.log(result);
+        /*
+        // move cash out of virtual account without altering real account
+        {
+            "name": "transaction-1",
+            "amount": -50,
+            "SourceId": 1,
+            "TargetId": 1
+        }
+        */
 
-                return db.Account.findByPk(2)
-            }).then(account => {
-                targetAccount = account;
+        // is the target virtual account backed by a real account?
+        // TODO:
 
-                const result = targetAccount.get({
-                    plain: true
-                });
-                console.log(result);
+        // if not:
 
-            }).then(() => {
+        console.log('A');
 
-                var transaction = db.Transaction.create({
-                    name: transactionDescriptor.name,
-                    amount: transactionDescriptor.amount
-                }).then((transaction) => {
+        // move cash into the target virtual account
+        insertIntoVirtualAccount(
+            transactionDescriptor.SourceId,
+            transactionDescriptor.TargetId,
+            transactionDescriptor.amount,
+            transactionDescriptor.name).then(() => {
 
-                    // set source and target with the save: false option
-                    // so that sequelize does not try to create those objects
-                    transaction.setSource(sourceAccount, { save: false });
-                    transaction.setTarget(targetAccount, { save: false });
+                console.log('B');
 
-                    transaction.save().then((transaction) => {
-                        const result = transaction.get({
-                            plain: true
-                        });
-
-                        res.send(result);
+                // remove cash from the source virtual account but not from the source real account
+                insertIntoVirtualAccount(
+                    transactionDescriptor.SourceId,
+                    transactionDescriptor.SourceId,
+                    (transactionDescriptor.amount * -1),
+                    transactionDescriptor.name).then((amount) => {
+                        res.send(amount);
                     });
-                });
-            });
+
+
+            })
+
+        // .then((amount) => {
+        //     res.send(amount);
+        // });
+
+
+
+
+        // remove cash from the source virtual account but not from the source real account
+        // TODO:
+
     }
 });
 
+// adds (removes) an amount into a virtual account without altering any real accounts
+// Does not add a transaction
+function insertIntoVirtualAccount(sourceVirtualAccountId, targetVirtualAccountId, amount, name) {
+
+    console.log("insertIntoVirtualAccount ");
+    console.log("sourceVirtualAccountId ", sourceVirtualAccountId);
+    console.log("targetVirtualAccountId ", targetVirtualAccountId);
+    console.log("amount ", amount);
+    console.log("name ", name);
+
+    // find all amounts by targetAccountId that are connected to source account it
+
+    var sourceRealAccountId = -1;
+    //var sourceRealAccountObject = null;
+
+    return db.Account.findByPk(sourceVirtualAccountId)
+        .then(sourceVirtualAccount => {
+
+            // TODO: loading the real accout is not needed.
+            // The real account id is stored in the amounts.
+            // only look at the amounts, never look at real account objects
+            // because when transferring from purely virtual to purely virtual account
+            // you will not be able to load a real account because there is none at any
+            // of the purely virtual accounts!
+
+            if (sourceVirtualAccount.realaccountid === undefined) {
+
+                // TODO: if there is no real account associated to the source virtual account,
+                // find the amounts the source virtual account has for the source real account id
+                // and transfer money from those
+                return db.Account.build({ id: 17 });
+
+            } else {
+
+                return db.Account.findByPk(sourceVirtualAccount.realaccountid);
+            }
+
+        }).then(sourceRealAccount => {
+
+            var sourceRealAccountObject = sourceRealAccount;
+            sourceRealAccountId = sourceRealAccountObject.id;
+
+            console.log('targetVirtualAccountId', targetVirtualAccountId);
+            console.log('sourceRealAccountId', sourceRealAccountId);
+
+            // find all amounts
+            return db.Amount.findAll({
+                where: {
+                    virtualaccountid: targetVirtualAccountId,
+                    realaccountid: sourceRealAccountId,
+                }
+            })
+
+        }).then(amounts => {
+
+            console.log('amounts', amounts);
+            console.log('Array.isArray', Array.isArray(amounts));
+            console.log('amounts.length', amounts.length);
+
+            if (Array.isArray(amounts) && amounts.length) {
+
+                // if one exists, alter that amount
+
+                console.log('not empty');
+
+                var amountObject = amounts[0];
+
+                console.log('amount id', amountObject.id);
+                console.log('amount amount', amountObject.amount);
+
+                var newAmount = amountObject.amount + amount;
+
+                console.log('new amount', newAmount);
+
+                // update the existing object
+                return amountObject.update({
+                    amount: newAmount
+                }).then((amount) => { return amount; });
+            }
+            else {
+
+                // if none exists, create one
+
+                console.log('empty');
+
+                return db.Amount.create({
+                    name: name,
+                    amount: amount,
+                    virtualaccountid: targetVirtualAccountId,
+                    realaccountid: sourceRealAccountId
+                }).then((amount) => {
+
+                    return amount;
+                });
+            }
+
+        })
+
+}
+
+// adds (removes) an amount into a virtual account and into its real account
+// also ads a transaction
+//
+// TODO: separate code that creates a transaction from this method!
 function alterVirtualAccount(virtualAccountId, amount, name) {
 
     var targetAccountObject = null;
@@ -226,20 +350,9 @@ function alterVirtualAccount(virtualAccountId, amount, name) {
                 //transaction.setSource(sourceAccount, { save: false });
                 transaction.setTarget(targetAccountObject, { save: false });
 
-                // transaction.save().then((transaction) => {
-                //     console.log('returning transaction ...');
-                //     return transaction;
-                // });
-
-                //return transaction.save();
-                //return transaction.save();
                 return transaction.save();
-
-                //return transaction;
             });
         });
-
-
 }
 
 module.exports = router;

@@ -28,6 +28,11 @@ module.exports = (sequelize, DataTypes) => {
             foreignKey: 'realaccountid',
             targetKey: 'id'
         });
+
+        models.Account.hasMany(models.Amount, {
+            foreignKey: 'virtualaccountid',
+            targetKey: 'id'
+        })
     };
 
     return Account;
