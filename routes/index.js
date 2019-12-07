@@ -1,18 +1,10 @@
 var express = require('express');
-const sql = require('mssql');
+var services = require('../persistence_services/services');
+
 var router = express.Router();
 
-const sqlConfig = {
-    user: 'root',
-    password: 'test',
-    server: '127.0.0.1:3306',
-    database: 'cash'
-}
-
-/* GET home page. */
 router.get('/', function (req, res, next) {
-
-
+    res.send('ok');
 });
 
 module.exports = router;
