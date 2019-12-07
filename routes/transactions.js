@@ -4,6 +4,25 @@ var db = require('../persistence/index.js');
 
 var router = express.Router();
 
+const Op = db.Sequelize.Op;
+
+router.get('/:virtualaccountid', async function (req, res, next) {
+
+    //console.log(req.params);
+    //console.log(req.params.virtualaccountid);
+
+    var virtualAccountId = req.params.virtualaccountid;
+
+    var result = await db.Transaction.findAll({
+        where: {
+            [Op.or]: [{ SourceId: virtualAccountId }, { TargetId: virtualAccountId }]
+        }
+    });
+
+    res.status(200).send(result);
+
+});
+
 /**
  * Income: to add amount 10 to the virtual account with the id 1 without source:
  * This only works if the virtual account is backed by a real account and if the
@@ -40,8 +59,8 @@ router.post('/create', async function (req, res, next) {
 
     console.log(transactionDescriptor);
 
-    if ((typeof transactionDescriptor.SourceId === "undefined")
-        && (typeof transactionDescriptor.TargetId === "undefined")) {
+    if ((typeof transactionDescriptor.SourceId === "undefined" || transactionDescriptor.SourceId <= 0)
+        && (typeof transactionDescriptor.TargetId === "undefined" || transactionDescriptor.TargetId <= 0)) {
 
         // The 422 (Unprocessable Entity) status code means the server understands 
         // the content type of the request entity (hence a 415(Unsupported Media Type) 
@@ -53,14 +72,14 @@ router.post('/create', async function (req, res, next) {
 
         res.status(400).send('the transaction requires at least a SourceId or a TargetId or both!');
 
-    } else if (typeof transactionDescriptor.SourceId === "undefined") {
+    } else if (typeof transactionDescriptor.SourceId === "undefined" || transactionDescriptor.SourceId <= 0) {
 
-        var result = await services.alterVirtualAccount(db, transactionDescriptor.TargetId, transactionDescriptor.amount, false, "name");
+        var result = await services.alterVirtualAccount(db, transactionDescriptor.TargetId, transactionDescriptor.amount, false, transactionDescriptor.name);
         res.status(200).send(result);
 
-    } else if (typeof transactionDescriptor.TargetId === "undefined") {
+    } else if (typeof transactionDescriptor.TargetId === "undefined" || transactionDescriptor.TargetId <= 0) {
 
-        var result = await services.alterVirtualAccount(db, transactionDescriptor.SourceId, transactionDescriptor.amount, true, "name");
+        var result = await services.alterVirtualAccount(db, transactionDescriptor.SourceId, transactionDescriptor.amount, true, transactionDescriptor.name);
         res.status(200).send(result);
 
     } else {
@@ -73,7 +92,7 @@ router.post('/create', async function (req, res, next) {
 
         await services.transferAmount(db, sourceVirtualAccount, targetVirtualAccount, transactionDescriptor.amount);
 
-        var result = await services.addTransaction(db, sourceVirtualAccount.id, targetVirtualAccount.id, 'test', transactionDescriptor.amount);
+        var result = await services.addTransaction(db, sourceVirtualAccount.id, targetVirtualAccount.id, transactionDescriptor.name, transactionDescriptor.amount);
 
         // insert transaction 
         res.status(200).send(result);

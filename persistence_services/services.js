@@ -204,7 +204,7 @@ async function alterVirtualAccount(db, virtualAccountId, amount, source, name) {
             amountObject = amounts[0];
 
             // increment the amount
-            var newAmount = amountObject.amount + amount;
+            var newAmount = +amountObject.amount + +amount;
 
             // update the object
             amountObject.update({
@@ -222,7 +222,9 @@ async function alterVirtualAccount(db, virtualAccountId, amount, source, name) {
 
         }).then(realaccount => {
 
-            var newAmount = realaccount.amount + amount;
+            var newAmount = +realaccount.amount + +amount;
+
+            console.log('newAmount:', newAmount);
 
             // update the object
             realaccount.update({

@@ -51,59 +51,59 @@ Object.keys(db).forEach(modelName => {
 
 async function main() {
 
-    //     console.log('main start');
+    console.log('main start');
 
-    //     console.log('clearing database ...');
+    console.log('clearing database ...');
 
-    // // delete the entire database
-    // await db.sequelize.sync({
-    //     force: true
-    // });
+    // delete the entire database
+    await db.sequelize.sync({
+        force: true
+    });
 
-    // console.log('clearing database done.');
+    console.log('clearing database done.');
 
-    // var amount1 = 100;
-    // // add real account
-    // var realAccount1 = await services.addRealAccount(db, 'RealAccount-1', amount1);
+    var amount1 = 0;
+    // add real account
+    var realAccount1 = await services.addRealAccount(db, 'RealAccount-1', amount1);
 
-    // // virtual account for real account
-    // var virtualAccount1 = await services.addVirtualAccount(db, 'VirtualAccount-1', realAccount1);
+    // virtual account for real account
+    var virtualAccount1 = await services.addVirtualAccount(db, 'VirtualAccount-1', realAccount1);
 
-    // // amount for virtual account 1
-    // var amount1 = await services.addAmount(db, realAccount1, virtualAccount1, amount1);
-
-
-
-    // var amount2 = 100;
-    // // add real account
-    // var realAccount2 = await services.addRealAccount(db, 'RealAccount-2', amount2);
-
-    // // virtual account for real account
-    // var virtualAccount2 = await services.addVirtualAccount(db, 'VirtualAccount-2', realAccount2);
-
-    // // amount for virtual account 2
-    // var amount2 = await services.addAmount(db, realAccount2, virtualAccount2, amount2);
+    // amount for virtual account 1
+    var amount1 = await services.addAmount(db, realAccount1, virtualAccount1, amount1);
 
 
 
+    var amount2 = 0;
+    // add real account
+    var realAccount2 = await services.addRealAccount(db, 'RealAccount-2', amount2);
 
-    // var amount3 = 0;
-    // // add real account
-    // var realAccount3 = await services.addRealAccount(db, 'RealAccount-3', amount3);
+    // virtual account for real account
+    var virtualAccount2 = await services.addVirtualAccount(db, 'VirtualAccount-2', realAccount2);
 
-    // // virtual account for real account
-    // var virtualAccount3 = await services.addVirtualAccount(db, 'VirtualAccount-3', realAccount3);
-
-    // // amount for virtual account 3
-    // var amount3 = await services.addAmount(db, realAccount3, virtualAccount3, amount3);
+    // amount for virtual account 2
+    var amount2 = await services.addAmount(db, realAccount2, virtualAccount2, amount2);
 
 
 
 
+    var amount3 = 0;
+    // add real account
+    var realAccount3 = await services.addRealAccount(db, 'RealAccount-3', amount3);
 
-    // // virtual account without a real account
-    // var virtualAccount4 = await services.addVirtualAccount(db, 'VirtualAccount-4', null);
-    // var virtualAccount5 = await services.addVirtualAccount(db, 'VirtualAccount-5', null);
+    // virtual account for real account
+    var virtualAccount3 = await services.addVirtualAccount(db, 'VirtualAccount-3', realAccount3);
+
+    // amount for virtual account 3
+    var amount3 = await services.addAmount(db, realAccount3, virtualAccount3, amount3);
+
+
+
+
+
+    // virtual account without a real account
+    var virtualAccount4 = await services.addVirtualAccount(db, 'VirtualAccount-4', null);
+    var virtualAccount5 = await services.addVirtualAccount(db, 'VirtualAccount-5', null);
 
 
     //     console.log('transfering money ...');
