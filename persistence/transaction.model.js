@@ -12,6 +12,9 @@ module.exports = (sequelize, DataTypes) => {
         },
         'amount': {
             type: DataTypes.INTEGER(11)
+        },
+        'dateTime': {
+            type: DataTypes.DATE()
         }
     });
 

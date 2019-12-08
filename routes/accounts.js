@@ -8,18 +8,30 @@ router.get('/virtual', async function (req, res, next) {
 
     var accounts = await db.Account.findAll();
 
+    for (var i = 0; i < accounts.length; i++) {
+
+        var account = accounts[i];
+
+        var amounts = await account.getAmounts();
+
+        // compute total amount of money in this virtual account
+        var totalAmount = 0;
+        amounts.forEach(amount => {
+            totalAmount += amount.amount;
+        });
+
+        // add the total amount as a custom data value to transfer it to the client
+        account.dataValues.totalAmount = totalAmount;
+    }
+
     res.status(200).send(accounts);
 });
 
 router.get('/virtual/:virtualaccountid', async function (req, res, next) {
 
     var virtualAccountId = req.params.virtualaccountid;
-    console.log('virtualAccountId:', virtualAccountId);
 
-    //var account = await db.Account.findByPk(virtualAccountId);
     var account = await services.retrieveVirtualAccountById(db, virtualAccountId);
-
-
 
     var amounts = await account.getAmounts();
 
@@ -31,8 +43,6 @@ router.get('/virtual/:virtualaccountid', async function (req, res, next) {
 
     // add the total amount as a custom data value to transfer it to the client
     account.dataValues.totalAmount = totalAmount;
-
-    console.log(account);
 
     res.status(200).send(account);
 });

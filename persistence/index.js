@@ -62,6 +62,7 @@ async function main() {
 
     console.log('clearing database done.');
 
+    /*
     var amount1 = 0;
     // add real account
     var realAccount1 = await services.addRealAccount(db, 'RealAccount-1', amount1);
@@ -104,7 +105,7 @@ async function main() {
     // virtual account without a real account
     var virtualAccount4 = await services.addVirtualAccount(db, 'VirtualAccount-4', null);
     var virtualAccount5 = await services.addVirtualAccount(db, 'VirtualAccount-5', null);
-
+*/
 
     //     console.log('transfering money ...');
     //     await services.transferAmount(db, virtualAccount1, virtualAccount4, 50);
@@ -118,6 +119,6 @@ async function main() {
     //     console.log('main end');
 }
 
-main();
+//main();
 
 module.exports = db;

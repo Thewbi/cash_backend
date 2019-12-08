@@ -34,8 +34,6 @@ async function transferAmount(db, virtualAccountSource, virtualAccountTarget, am
         totalAmountInSource += sourceAmount.amount;
     });
 
-    console.log('totalAmountInSource:', totalAmountInSource);
-
     // check if the source amount can serve the request
     if (totalAmountInSource < amount) {
         console.log('There is not enough money in the source account!');
@@ -45,7 +43,6 @@ async function transferAmount(db, virtualAccountSource, virtualAccountTarget, am
     var amountLeft = amount;
 
     // copy amounts until the total amount was transferred
-    console.log('sourceAmounts.length:', sourceAmounts.length);
     for (var i = 0; i < sourceAmounts.length; i++) {
 
         var sourceAmount = sourceAmounts[i];
@@ -55,21 +52,14 @@ async function transferAmount(db, virtualAccountSource, virtualAccountTarget, am
         var targetAmounts = await findAmountInVirtualAccount(db, virtualAccountTarget, sourceAmount.realaccountid);
         if (typeof targetAmounts !== 'undefined' && targetAmounts.length > 0) {
 
-            console.log('amount existed!');
             targetAmount = targetAmounts[0];
+
         } else {
 
-            console.log('RealID:', sourceAmount.realaccountid);
-            console.log('VirtualID:', virtualAccountTarget.id);
-
             targetAmount = await addAmountByIds(db, sourceAmount.realaccountid, virtualAccountTarget.id, 0);
-
-            console.log('amount was created!');
         }
 
         if (amountLeft <= sourceAmount.amount) {
-
-            console.log('Money fits!');
 
             sourceAmount.amount -= amountLeft;
             await sourceAmount.save().then(() => { });
@@ -78,9 +68,8 @@ async function transferAmount(db, virtualAccountSource, virtualAccountTarget, am
 
             // if there is a physical account backing the target virtual account
             // transfer real money
-            console.log(virtualAccountTarget.realaccountid);
+
             if (virtualAccountTarget.realaccountid) {
-                console.log('there is a real account!');
 
                 var realAccount = await virtualAccountTarget.getRealAccount();
                 realAccount.amount += amountLeft;
@@ -109,7 +98,6 @@ async function transferAmount(db, virtualAccountSource, virtualAccountTarget, am
             // if there is a physical acount backing the target virtual account
             // transfer real money
             if (virtualAccountTarget.realaccountid) {
-                console.log('there is a real account!');
 
                 var realAccount = await virtualAccountTarget.getRealAccount();
                 realAccount.amount += oldSourceAmount;
@@ -160,12 +148,13 @@ async function addAmountByIds(db, realAccountId, virtualAccountId, amount) {
     });
 }
 
-async function addTransaction(db, sourceAccountId, targetAccountId, name, amount) {
+async function addTransaction(db, sourceAccountId, targetAccountId, name, amount, dateTime) {
     return db.Transaction.create({
         name: name,
         amount: amount,
         SourceId: sourceAccountId,
-        TargetId: targetAccountId
+        TargetId: targetAccountId,
+        dateTime: dateTime
     });
 }
 
@@ -177,12 +166,10 @@ async function retrieveVirtualAccountById(db, virtualAccountId) {
 // also ads a transaction
 //
 // TODO: separate code that creates a transaction from this method!
-async function alterVirtualAccount(db, virtualAccountId, amount, source, name) {
+async function alterVirtualAccount(db, virtualAccountId, amount, source, name, dateTime) {
 
     var targetAccountObject = null;
     var amountObject = null;
-
-    console.log('alterVirtualAccount() ...');
 
     // load the virtual account
     return db.Account.findByPk(virtualAccountId)
@@ -224,8 +211,6 @@ async function alterVirtualAccount(db, virtualAccountId, amount, source, name) {
 
             var newAmount = +realaccount.amount + +amount;
 
-            console.log('newAmount:', newAmount);
-
             // update the object
             realaccount.update({
                 amount: newAmount
@@ -233,11 +218,10 @@ async function alterVirtualAccount(db, virtualAccountId, amount, source, name) {
 
         }).then(() => {
 
-            console.log('saving transaction ...');
-
             return db.Transaction.create({
                 name: name,
-                amount: amount
+                amount: amount,
+                dateTime: dateTime
             }).then((transaction) => {
 
                 // set source and target with the save: false option

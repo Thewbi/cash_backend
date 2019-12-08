@@ -8,9 +8,6 @@ const Op = db.Sequelize.Op;
 
 router.get('/:virtualaccountid', async function (req, res, next) {
 
-    //console.log(req.params);
-    //console.log(req.params.virtualaccountid);
-
     var virtualAccountId = req.params.virtualaccountid;
 
     var result = await db.Transaction.findAll({
@@ -74,25 +71,42 @@ router.post('/create', async function (req, res, next) {
 
     } else if (typeof transactionDescriptor.SourceId === "undefined" || transactionDescriptor.SourceId <= 0) {
 
-        var result = await services.alterVirtualAccount(db, transactionDescriptor.TargetId, transactionDescriptor.amount, false, transactionDescriptor.name);
+        var result = await services.alterVirtualAccount(db,
+            transactionDescriptor.TargetId,
+            transactionDescriptor.amount,
+            false,
+            transactionDescriptor.name,
+            transactionDescriptor.dateTime);
+
         res.status(200).send(result);
 
     } else if (typeof transactionDescriptor.TargetId === "undefined" || transactionDescriptor.TargetId <= 0) {
 
-        var result = await services.alterVirtualAccount(db, transactionDescriptor.SourceId, transactionDescriptor.amount, true, transactionDescriptor.name);
+        var result = await services.alterVirtualAccount(db,
+            transactionDescriptor.SourceId,
+            transactionDescriptor.amount,
+            true,
+            transactionDescriptor.name,
+            transactionDescriptor.dateTime);
+
         res.status(200).send(result);
 
     } else {
 
         var sourceVirtualAccount = await services.retrieveVirtualAccountById(db, transactionDescriptor.SourceId);
-        console.log('Source:', sourceVirtualAccount);
-
         var targetVirtualAccount = await services.retrieveVirtualAccountById(db, transactionDescriptor.TargetId);
-        console.log('Target:', targetVirtualAccount);
 
-        await services.transferAmount(db, sourceVirtualAccount, targetVirtualAccount, transactionDescriptor.amount);
+        await services.transferAmount(db,
+            sourceVirtualAccount,
+            targetVirtualAccount,
+            transactionDescriptor.amount);
 
-        var result = await services.addTransaction(db, sourceVirtualAccount.id, targetVirtualAccount.id, transactionDescriptor.name, transactionDescriptor.amount);
+        var result = await services.addTransaction(db,
+            sourceVirtualAccount.id,
+            targetVirtualAccount.id,
+            transactionDescriptor.name,
+            transactionDescriptor.amount,
+            transactionDescriptor.dateTime);
 
         // insert transaction 
         res.status(200).send(result);
