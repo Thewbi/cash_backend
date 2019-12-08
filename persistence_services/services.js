@@ -166,7 +166,7 @@ async function retrieveVirtualAccountById(db, virtualAccountId) {
 // also ads a transaction
 //
 // TODO: separate code that creates a transaction from this method!
-async function alterVirtualAccount(db, virtualAccountId, amount, source, name, dateTime) {
+async function alterVirtualAccount(db, virtualAccountId, amount, source, name, dateTime, apply) {
 
     var targetAccountObject = null;
     var amountObject = null;
@@ -190,13 +190,18 @@ async function alterVirtualAccount(db, virtualAccountId, amount, source, name, d
 
             amountObject = amounts[0];
 
-            // increment the amount
-            var newAmount = +amountObject.amount + +amount;
+            // only if the user wants to apply this transaction, change the amounts
+            // This feature is important for documenting old transactions for validation purposes
+            if (apply) {
 
-            // update the object
-            amountObject.update({
-                amount: newAmount
-            }).then(() => { });
+                // increment the amount in the virtual account
+                var newAmount = +amountObject.amount + +amount;
+
+                // update the object
+                amountObject.update({
+                    amount: newAmount
+                }).then(() => { });
+            }
 
             if (typeof amountObject.realaccountid === "undefined") {
                 return;
@@ -209,14 +214,20 @@ async function alterVirtualAccount(db, virtualAccountId, amount, source, name, d
 
         }).then(realaccount => {
 
-            var newAmount = +realaccount.amount + +amount;
+            // only if the user wants to apply this transaction, change the amounts
+            // This feature is important for documenting old transactions for validation purposes
+            if (apply) {
+                var newAmount = +realaccount.amount + +amount;
 
-            // update the object
-            realaccount.update({
-                amount: newAmount
-            }).then(() => { });
+                // update the amount in the real account
+                realaccount.update({
+                    amount: newAmount
+                }).then(() => { });
+            }
 
         }).then(() => {
+
+            console.log('dateTime:', dateTime);
 
             return db.Transaction.create({
                 name: name,

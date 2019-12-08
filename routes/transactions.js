@@ -76,7 +76,8 @@ router.post('/create', async function (req, res, next) {
             transactionDescriptor.amount,
             false,
             transactionDescriptor.name,
-            transactionDescriptor.dateTime);
+            transactionDescriptor.dateTime,
+            transactionDescriptor.apply);
 
         res.status(200).send(result);
 
@@ -87,7 +88,8 @@ router.post('/create', async function (req, res, next) {
             transactionDescriptor.amount,
             true,
             transactionDescriptor.name,
-            transactionDescriptor.dateTime);
+            transactionDescriptor.dateTime,
+            transactionDescriptor.apply);
 
         res.status(200).send(result);
 
