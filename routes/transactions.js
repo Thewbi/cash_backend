@@ -17,6 +17,27 @@ router.get('/:virtualaccountid', async function (req, res, next) {
     });
 
     res.status(200).send(result);
+});
+
+router.delete('/delete/:transactionid', async function (req, res, next) {
+
+    var transactionid = req.params.transactionid;
+
+    db.Transaction.destroy({
+        where: {
+            id: transactionid
+        }
+    }).then(function (transaction) {
+        if (transaction) {
+            res.status(200).send('ok');
+            return;
+        }
+        res.status(500).send('Could not delete transaction!');
+        return;
+    }).catch(function (err) {
+        res.status(500).send('Could not delete transaction error:', err);
+        return;
+    });
 
 });
 

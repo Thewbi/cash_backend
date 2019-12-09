@@ -123,6 +123,10 @@ async function findAmountInVirtualAccount(db, virtualAccount, realaccountid) {
     });
 }
 
+async function retrieveTransactionById(db, transactionId) {
+    return await db.Transaction.findOne({ where: { id: transactionId } });
+}
+
 async function addRealAccount(db, name, amount) {
     return db.RealAccount.create({
         name: name,
@@ -258,6 +262,7 @@ module.exports = {
     addAmountByIds: addAmountByIds,
     addTransaction: addTransaction,
     retrieveVirtualAccountById: retrieveVirtualAccountById,
-    alterVirtualAccount: alterVirtualAccount
+    alterVirtualAccount: alterVirtualAccount,
+    retrieveTransactionById: retrieveTransactionById
 
 };
